@@ -4,6 +4,7 @@
 #include "hash.h"
 #include "heap.h"
 #include "abb.h"
+#include "pila.h"
 
 const char *acciones[] = {"agregar_archivo","ver_tablero","info_vuelo","prioridad_vuelos","borrar"}
 typedef enum op = {op_agregar,op_tablero,op_info,op_prioridad,op_borrar}op_t;
@@ -46,6 +47,17 @@ void borrar_vuelo(vuelo_t *vuelo){
     free(vuelo);
 }
 
+int comparar(const char *a, const char *b){
+    return strcmp(a,b);//compara la fecha, y ordena de menor a mayor
+}
+
+int comparar_heap((vuelo_t*)const void *a, (vuelo_t*)const void *a){
+    a->prioridad;
+}
+
+
+
+
 bool agregar_archivo(char *archivo, FILE *vuelos,hash_t *hash, abb_t *abb, heap_t *heap){
     FILE *arch = fopen(archivo,r);
     if(!arch){
@@ -71,7 +83,19 @@ bool agregar_archivo(char *archivo, FILE *vuelos,hash_t *hash, abb_t *abb, heap_
 }
 
 void ver_tablero(char **operacion, heap_t *heap{
+    pila_t *pila = pila_crear();
+    if(!pila){
+        fprintf(stderr,"ERROR de memoria\n");
+        return;
+    }
 
+    if(strcmp(operacion[2],"asc") == 0){
+        nodo_t *mayor = abb_obtener(abb,operacion[4]);
+        pila_apilar(pila,mayor);
+        for(long i = 0; i < strtol(operacion[1],NULL,10)-1; i++){
+            pila_apilar(pila,mayor->)
+        }
+    }
 }
 
 void info_vuelos(){
