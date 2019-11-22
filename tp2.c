@@ -47,18 +47,28 @@ void borrar_vuelo(vuelo_t *vuelo){
     free(vuelo);
 }
 
-int comparar(const char *a, const char *b){
-    return strcmp(a,b);//compara la fecha, y ordena de menor a mayor
+int comparar_abb((vuelo_t*)const void *a, (vuelo_t*)const void *b){
+    if(strcmp(a->prioridad,b->prioridad) == 0){//compara la prioridad, y ordena de menor a mayor
+        return strcmp(a->num,b->num) ;
+    }
+    return strcmp(a->prioridad,b->prioridad);
 }
 
 int comparar_heap((vuelo_t*)const void *a, (vuelo_t*)const void *a){
-    a->prioridad;
+    if(strcmp(a->fecha,b->fecha) == 0){
+        return a->num > b->num;//return strcmp(a->num,b->num);
+    }
+    return strcmp(a->fecha,b->fecha);
+/*
+    return strcmp(a->fecha,b->fecha) == 0 ? strcmp(a->fecha,b->fecha) : strcmp(a->num,b->num);
+*/
+
 }
 
 
 
 
-bool agregar_archivo(char *archivo, FILE *vuelos,hash_t *hash, abb_t *abb, heap_t *heap){
+bool agregar_archivo(char *archivo,hash_t *hash, abb_t *abb, heap_t *heap){
     FILE *arch = fopen(archivo,r);
     if(!arch){
         fprintf(stderr,"ERROR al abrir el archivo\n");
@@ -82,7 +92,16 @@ bool agregar_archivo(char *archivo, FILE *vuelos,hash_t *hash, abb_t *abb, heap_
     return true;
 }
 
-void ver_tablero(char **operacion, heap_t *heap{
+bool ver_tablero(char **operacion, heap_t *heap{
+    long k = strtol(operacion[1],NULL,10);
+    if(k <= 0)return false;
+    if(strcmp(operacion[2],"asc") != 0 && strcmp(operacion[2],"desc") != 0)return false;
+    if(strcmp(operacion[3],operacion[4]) > 0 )return false;
+    if(strcmp(operacion[2],"asc") == 0){
+        abb_iter_tp2_t *iter = abb_iter_tp2_crear()tablero ascendente;
+    }else{
+        tablero descendente;
+    }
     pila_t *pila = pila_crear();
     if(!pila){
         fprintf(stderr,"ERROR de memoria\n");
@@ -98,8 +117,12 @@ void ver_tablero(char **operacion, heap_t *heap{
     }
 }
 
-void info_vuelos(){
+bool info_vuelos(hash_t *hash, const char *codigo){
+    vuelo_t *buscado = hash_obtener(hash,codigo);
+    if(!buscado)return false;
 
+    fprintf(stdout,"%s %s %s %s %s %s %s %s\n OK\n", vuelo->num, vuelo->aerolinea, vuelo->origen, vuelo->dest, vuelo->cola, vuelo->prioridad, vuelo->fecha, vuelo-demora);
+    return true;
 }
 
 void prioridad_vuelos(){
@@ -111,19 +134,26 @@ void borrar(){
 }
 
 
+void error(char **operacion,pila_t *pila){
+	fprintf(stdout,"Error en comando %s\n",operacion[0]);
+	free_strv(operacion);
+	//pila_vaciar(pila);
+	//pila_destruir(pila);
+}
+
 /*OPERAR REALIZA CADA OPERACION EN PARTICULAR Y APILA EL RESULTADO A LA PILA
  O DEVUELVE FALSE SI HUBO UN ERROR EN LA MISMA*/
-bool operar(op_t op, char **operacion, FILE *vuelos, hash_t *hash, abb_t *abb, heap_t *heap){
+bool operar(op_t op, char **operacion, hash_t *hash, abb_t *abb, heap_t *heap){
 	
 	switch(op){
 		case op_agregar :
-            agregar_archivo(operacion[1],vuelos,hash,abb,heap);
+            if(!agregar_archivo(operacion[1],hash,abb,heap))return false;
 			break;
 		case op_tablero :
-            ver_tablero(operacion,hash);
+            if(!ver_tablero(operacion,hash))return false;
 			break;
 		case op_info :
-            info_vuelo();
+            if(!info_vuelo(hash,codigo))return false;
 			break;
 		case op_prioridad :
             prioridad_vuelos();
@@ -132,6 +162,7 @@ bool operar(op_t op, char **operacion, FILE *vuelos, hash_t *hash, abb_t *abb, h
             borrar();
 			break;
 	}
+    fprintf(stdout,"OK\n");
 	return true;
 }
 
@@ -139,7 +170,7 @@ bool operar(op_t op, char **operacion, FILE *vuelos, hash_t *hash, abb_t *abb, h
 /*IDENTIFICAR OPERACION REALIZA TODAS LAS CUENTAS NECESARIAS POR LÍNEA PARA DEVOLVER UN ÚLTIMO RESULTADO
 DEFINITIVO. LA MISMA LLAMA A CALCULAR PARA CADA VEZ QUE LEE UN OPERANDO. EL MAIN LLAMA A CALCULAR
 UNA VEZ PARA CADA LINEA*/
-void identificar_operacion(char *linea, FILE *vuelos, hash_t *hash){
+void identificar_operacion(char *linea, hash_t *hash, abb_t *abb, heap_t *heap){
 
     size_t i = 0;
     /*linea[leidos-1] = '\0';
@@ -150,7 +181,7 @@ void identificar_operacion(char *linea, FILE *vuelos, hash_t *hash){
     int n = 0;
     while(n <= op_borrar  && !operado){
         if(strcmp(operacion[0],acciones[n]) == 0){
-            if(!operar(n,operacion,vuelos,hash)){
+            if(!operar(n,operacion,vuelos,hash,abb,heap)){
                 error(operacion);
                 return;
             }
@@ -159,13 +190,15 @@ void identificar_operacion(char *linea, FILE *vuelos, hash_t *hash){
         n++;
     }
     if(!operado){
-        char *fin;
+        error(operacion);
+        return;
+        /*char *fin;
         long num = strtol(operacion[i],&fin,10);
         if(operacion[i] == fin){
             error(operacion);
             return;
         }
-        long *res = malloc(sizeof(long));
+        long *res = malloc(sizeof(long));*/
         
     }
     i++;		
@@ -173,38 +206,29 @@ void identificar_operacion(char *linea, FILE *vuelos, hash_t *hash){
         i++;
     }		
     free_strv(operacion);
-    free(tope);
 }
 
 
 
 
 int main(int argc, char *argv[]){
-    FILE *vuelos = fopen("algueiza.txt",w);
-    if(!vuelos){
-        fprintf(stderr,"ERROR al abrir archivo vuelos\n");
-        return;
-    }
 
-    hash_t *hash = hash_crear(borrar_vuelo);
+    hash_t *hash = hash_crear(borrar_vuelo);//PARA INFO VUELOS
     if(!hash){
-        fclose(vuelos);
         fprintf(stderr,"ERROR de memoria\n");
         return;
     }
 
 
-    abb_t *abb = abb_crear(comparar, borrar_vuelo);
+    abb_t *abb = abb_crear(comparar_abb, borrar_vuelo);//PARA VER TABLERO
     if(!abb){
-        fclose(vuelos);
         hash_destruir(hash);
         fprintf(stderr,"ERROR de memoria\n");
         return;
     }
 
-    heap_t *heap = heap_crear(comparar_heap),
+    heap_t *heap = heap_crear(comparar_heap);//PARA VER PRIORIDADES
     if(!heap){
-        fclose(vuelos);
         hash_destruir(hash);
         abb_destruir(abb);
         fprintf(stderr,"ERROR de memoria\n");
@@ -219,12 +243,11 @@ int main(int argc, char *argv[]){
         if(leidos <= 1){
 		    fprintf(stdout,"ERROR, faltan parametros");
 	    }else{	
-            identificar_operacion(linea,vuelos,hash,abb,heap);	
+            identificar_operacion(linea,hash,abb,heap);	
             leidos = getline(&linea, &capacidad, stdin);	
         }
     }
     free(linea);
 
-    fclose(vuelos);
     return;
 }

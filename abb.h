@@ -62,6 +62,8 @@ void abb_destruir(abb_t *arbol);
 */
 void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra);
 
+void abb_in_order_finito(abb_t *arbol, bool visitar(const char*, void*, void*), const char *inicio, const char *fin):
+
 /* Iterador del abb */
 typedef struct abb_iter abb_iter_t;
 
