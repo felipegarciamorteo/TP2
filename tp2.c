@@ -6,6 +6,7 @@
 #include "heap.h"
 #include "abb.h"
 #include "pila.h"
+#include "strutil.h"
 
 const char *acciones[] = {"agregar_archivo","ver_tablero","info_vuelo","prioridad_vuelos","borrar"}
 typedef enum op = {op_agregar,op_tablero,op_info,op_prioridad,op_borrar}op_t;
@@ -87,13 +88,18 @@ bool agregar_archivo(char *archivo,hash_t *hash, abb_t *abb){
     while(leidos >= 0){
         char **datos = split(linea,',');
         vuelo_t *vuelo = vuelo_crear(datos);
-        char *clave_abb = calloc(strlen(datos[fecha])+strlen(datos[num])+1,sizeof(char))
+       /* char *clave_abb = calloc(strlen(datos[fecha])+strlen(datos[num])+1,sizeof(char))
         strcpy(clave_abb,datos[fecha]);
-        strcat(clave_abb,datos[num]);
+        strcat(clave_abb,datos[num]);*/
+        char *claves[2];
+        char clave[0] = datos[fecha];
+        char clave[1] = datos[num];
+        char *clave_abb = join(clave,'');
         if(!hash_guardar(hash,datos[num],vuelo) || !abb_guardar(abb,clave_abb,vuelo) ){
             fprintf(stderr,"ERROR de memoria\n");
             return false;
         };	
+        //free(clave_abb);
         leidos = getline(&linea, &capacidad, arch);	
     }
     free(linea);
