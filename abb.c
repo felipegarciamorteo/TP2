@@ -51,6 +51,7 @@ nodo_t* nodo_crear(const char* clave, void* dato){
     nodo->izq = NULL;
 	return nodo;
 }
+
 void nodo_destruir(abb_destruir_dato_t destruir_dato, nodo_t* nodo){
 	if(destruir_dato != NULL){
 		destruir_dato(nodo->dato);
@@ -314,31 +315,30 @@ void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void
 	
 }
 
-void _abb_in_order_finito(abb_t *abb, nodo_t* nodo, bool visitar(const char *, void *, void *),const char *inicio, const char *fin, bool *corte, void *extra){
-	
-	if (!nodo /*|| abb->comparar(nodo->clave,inicio) <= 0 || abb->comparar(nodo->clave,fin) >= 0*/)return;
-	
-	if(abb->comparar(nodo->clave,inicio) < 0){
-		_abb_in_order_finito(abb,nodo->der,visitar,inicio,fin,corte,extra);
-	}else{
-		_abb_in_order_finito(abb,nodo->izq,visitar,inicio,fin,corte,extra);
+
+void _abb_in_order_finito(abb_t *abb, nodo_t *nodo, bool visitar(const char*, void*, void*), const char *inicio, const char *fin, bool *corte, void *extra){
+	if(!nodo)return;
+	if(abb->comparar(nodo->clave,inicio) > 0 ){
+		_abb_in_order_finito(abb,nodo->izq,visitar,inicio,fin,corte,extra);		
+	}else if(abb->comparar(nodo->clave,inicio) < 0){
+		_abb_in_order_finito(abb,nodo->der,visitar,inicio,fin,corte,extra);	
 	}
-	if(abb->comparar(nodo->clave,fin) > 0){
-		*corte = true;
-	}
+	//printf("clave:%s inicio:%s fin:%s \n",nodo->clave,inicio,fin);
+	//printf("%i %i\n",abb->comparar(nodo->clave,inicio),abb->comparar(nodo->clave,fin));
 	if(*corte)return;
-	if(!visitar(nodo->clave,nodo->dato,extra) || abb->comparar(nodo->clave,fin) == 0){
-		*corte = true;
+	if(abb->comparar(nodo->clave,inicio) >= 0 && abb->comparar(nodo->clave,fin) <= 0 ){
+		//printf("itero\n");
+		if(!visitar(nodo->clave,nodo->dato,extra)){
+			*corte = true;
+		}
+		_abb_in_order_finito(abb,nodo->der,visitar,inicio,fin,corte,extra);
 	}
-	_abb_in_order_finito(abb,nodo->der,visitar,inicio,fin,corte,extra);
 }
 
 void abb_in_order_finito(abb_t *arbol, bool visitar(const char*, void*, void*), const char *inicio, const char *fin, void *extra){
-	
 	if (!arbol->raiz)return;
 	bool corte = false;
-	_abb_in_order_finito(arbol,arbol->raiz,visitar,inicio,fin,&corte,extra);
-	
+	_abb_in_order_finito(arbol,arbol->raiz,visitar,inicio,fin,&corte,extra);	
 }
 
 
@@ -388,8 +388,8 @@ bool abb_iter_in_avanzar(abb_iter_t *iter){
 	return true;
 }
 
-nodo_t *abb_iter_in_ver_nodo_actual(const abb_iter_t *iter){
-	nodo_t* act = (nodo_t*)pila_ver_tope(iter->pila);
+nodo_t *abb_iter_in_ver_dato_actual(const abb_iter_t *iter){
+	nodo_t* act = ((nodo_t*)pila_ver_tope(iter->pila))->dato;
 	if(act)return act;
 	return NULL;
 }

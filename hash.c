@@ -31,7 +31,7 @@ typedef struct campo{
 	void* valor;
 }campo_t;
 
-char *copiar_clave(const char *clave)
+char *hash_copiar_clave(const char *clave)
 {
     char *copia = malloc(sizeof(char)*(strlen(clave)+1));
     if (copia == NULL){
@@ -46,7 +46,7 @@ campo_t* campo_crear(const char* clave, void* valor){
 	if(campo==NULL){
 		return NULL;
 	}
-	char* copia = copiar_clave(clave);
+	char* copia = hash_copiar_clave(clave);
 	if (copia == NULL){
 		free (campo);
 		return NULL;
@@ -332,6 +332,13 @@ const char *hash_iter_ver_actual(const hash_iter_t *iter){
 		return NULL;
 	}
 	return ((campo_t*)lista_iter_ver_actual(iter->iter_lista))->clave;
+}
+
+const void *hash_iter_ver_dato_actual(const hash_iter_t *iter){
+	if(hash_iter_al_final(iter)){
+		return NULL;
+	}
+	return ((campo_t*)lista_iter_ver_actual(iter->iter_lista))->valor;
 }
 
 bool hash_iter_al_final(const hash_iter_t *iter){

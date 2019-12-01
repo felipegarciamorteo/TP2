@@ -10,7 +10,7 @@ typedef struct nodo{
 
 }nodo_t;
 
-nodo_t* nodo_crear(void* dato_asig) {
+nodo_t* lista_nodo_crear(void* dato_asig) {
     nodo_t* nodo = malloc(sizeof(nodo_t));
     if (nodo == NULL){
         return NULL;
@@ -19,7 +19,7 @@ nodo_t* nodo_crear(void* dato_asig) {
     nodo->sig = NULL;
     return nodo;
 }
-void nodo_destruir(nodo_t* nodo){
+void lista_nodo_destruir(nodo_t* nodo){
     free(nodo);
 }  
 
@@ -52,7 +52,7 @@ void insertar_lista_vacia(lista_t *lista, nodo_t* nodo){
     lista->largo ++;
 }
 bool lista_insertar_primero(lista_t *lista, void *dato){
-    nodo_t* elem =nodo_crear(dato);
+    nodo_t* elem = lista_nodo_crear(dato);
     if (elem == NULL)return false;
     if (lista_esta_vacia(lista)){
         insertar_lista_vacia(lista, elem);
@@ -65,7 +65,7 @@ bool lista_insertar_primero(lista_t *lista, void *dato){
 
 }
 bool lista_insertar_ultimo(lista_t *lista, void *dato){
-    nodo_t* elem = nodo_crear(dato);
+    nodo_t* elem = lista_nodo_crear(dato);
     if (elem == NULL)return false;
     if (lista_esta_vacia(lista)){
         insertar_lista_vacia(lista, elem);
@@ -86,7 +86,7 @@ void *lista_borrar_primero(lista_t *lista){
     }
     lista->prim = lista->prim->sig;
     lista->largo --;
-    nodo_destruir(sustraido);
+    lista_nodo_destruir(sustraido);
     return valor;
 
 }
@@ -111,7 +111,7 @@ void lista_destruir(lista_t *lista, void destruir_dato(void *)){
             if (destruir_dato != NULL){
                 destruir_dato(act->dato);
             }
-            nodo_destruir(act);
+            lista_nodo_destruir(act);
             act = siguiente;
         }
     free(lista); 
@@ -170,7 +170,7 @@ void lista_iter_destruir(lista_iter_t *iter){
 
 }
 bool lista_iter_insertar(lista_iter_t *iter, void *dato){
-    nodo_t* nodo = nodo_crear(dato); 
+    nodo_t* nodo = lista_nodo_crear(dato); 
     if (!nodo)return false;
     if (iter->ant != NULL){
         iter->ant->sig = nodo;

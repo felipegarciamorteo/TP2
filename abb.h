@@ -75,7 +75,7 @@ abb_iter_t *abb_iter_in_crear(const abb_t *arbol);
 bool abb_iter_in_avanzar(abb_iter_t *iter);
 
 //Devuelve nodo actual, modificado para el tp2
-nodo_t *abb_iter_in_ver_nodo_actual(const abb_iter_t *iter);
+nodo_t *abb_iter_in_ver_dato_actual(const abb_iter_t *iter);
 
 // Devuelve clave actual, esa clave no se puede modificar ni liberar.
 const char *abb_iter_in_ver_actual(const abb_iter_t *iter);
