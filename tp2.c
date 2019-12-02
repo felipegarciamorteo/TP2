@@ -1,5 +1,4 @@
 #define _POSIX_C_SOURCE 200809L
-#include "tp2.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,7 +6,6 @@
 #include "heap.h"
 #include "abb.h"
 #include "pila.h"
-#include "lista.h"
 #include "strutil.h"
 
 const char *acciones[] = {"agregar_archivo","ver_tablero","info_vuelo","prioridad_vuelos","borrar"};
@@ -15,8 +13,19 @@ typedef enum {op_agregar,op_tablero,op_info,op_prioridad,op_borrar}op_t;
 
 typedef enum {num,aerolinea,origen,dest,cola,prioridad,fecha,demora,tiempo,cancelados}vuelo_enum_t;
 
+/*****************************************************
+*    ESTRUCTURAS AUXILIARES A USAR POR EL PROGRAMA   *
+******************************************************/
 
-struct vuelo{
+typedef struct tablero{
+    long k;
+    long contador;
+    pila_t *pila;
+    bool asc;
+}tablero_t;
+
+
+typedef struct vuelo{
     //int num;
     char *num;
     char *aerolinea;
@@ -30,8 +39,7 @@ struct vuelo{
     char *tiempo;
     char *cancelados;
     //int demora;
-};
-
+}vuelo_t;
 
 vuelo_t* vuelo_crear(char **datos){
     vuelo_t *vuelo = malloc(sizeof(vuelo_t));
@@ -70,6 +78,10 @@ void _borrar_vuelo(vuelo_t *vuelo){
 void borrar_vuelo(void *vuelo){
     _borrar_vuelo((vuelo_t*)vuelo);
 }
+
+/********************************************************
+*                 FUNCIONES DE COMPARACIÓN              *
+*********************************************************/
 
 int comparar_abb(const char *a, const char *b){
   return strcmp(a,b);
@@ -113,13 +125,41 @@ int comparar_heap(/*(vuelo_t*)*/const void *a, /*(vuelo_t*)*/const void *b){
 */
 }
 
+/********************************************************
+*            FUNCIONES AUXILIARES DEL PROGRAMA          *
+*********************************************************/
 
+bool visitar(const char *clave, void *vuelo, void *extra){
+    if(((tablero_t*)extra)->contador >= ((tablero_t*)extra)->k)return false;
+   
+    if(((tablero_t*)extra)->asc){
+       fprintf(stdout,"%s - %s\n",((vuelo_t*)vuelo)->fecha,((vuelo_t*)vuelo)->num);
+    }else{
+        pila_apilar(((tablero_t*)extra)->pila,vuelo);
+    }
+    ((tablero_t*)extra)->contador++;
+    return true;
+}
 
+bool apilar(const char *clave, void *vuelo, void *pila){
+    if(!pila_apilar((pila_t*)pila,vuelo))return false;
+    return true;
+}
 
-bool agregar_archivo(const char *archivo,hash_t *hash, abb_t *abb){
-    FILE* arch = fopen(archivo,"r");
+void error(char **operacion){
+	fprintf(stderr,"Error en comando %s\n",operacion[0]);
+	free_strv(operacion);
+}
+
+/********************************************************
+*                 FUNCIONES DEL PROGRAMA                *
+*********************************************************/
+
+bool agregar_archivo(char **operacion, hash_t *hash, abb_t *abb){
+    if(!operacion[1]|| operacion[2])return false;
+    FILE* arch = fopen(operacion[1],"r");
     if(!arch){
-        fprintf(stderr,"ERROR al abrir el archivo, en agregar_archivo\n");
+        //fprintf(stderr,"ERROR al abrir el archivo, en agregar_archivo\n");
         return false;
     }
     
@@ -142,7 +182,7 @@ bool agregar_archivo(const char *archivo,hash_t *hash, abb_t *abb){
         char *clave_abb = join(claves,'-');
        // printf("llego\n");
         if(!hash_guardar(hash,datos[num],vuelo) || !abb_guardar(abb,clave_abb,vuelo) ){
-            fprintf(stderr,"ERROR de memoria\n");
+            //fprintf(stderr,"ERROR de memoria\n");
             return false;
         };
         free(clave_abb);
@@ -155,26 +195,8 @@ bool agregar_archivo(const char *archivo,hash_t *hash, abb_t *abb){
     return true;
 }
 
-typedef struct tablero{
-    long k;
-    long contador;
-    pila_t *pila;
-    bool asc;
-}tablero_t;
-
-bool visitar(const char *clave, void *vuelo, void *extra){
-    if(((tablero_t*)extra)->contador >= ((tablero_t*)extra)->k)return false;
-   
-    if(((tablero_t*)extra)->asc){
-       fprintf(stdout,"%s - %s\n",((vuelo_t*)vuelo)->fecha,((vuelo_t*)vuelo)->num);
-    }else{
-        pila_apilar(((tablero_t*)extra)->pila,vuelo);
-    }
-    ((tablero_t*)extra)->contador++;
-    return true;
-}
-
 bool ver_tablero(char **operacion, abb_t *abb){
+    if(!operacion[1] || !operacion[2] || !operacion[3] || !operacion[4] || operacion[5])return false;
     long k = strtol(operacion[1],NULL,10);
     if(k <= 0)return false;
     if(strcmp(operacion[2],"asc") != 0 && strcmp(operacion[2],"desc") != 0)return false;
@@ -207,6 +229,7 @@ bool ver_tablero(char **operacion, abb_t *abb){
 }
 
 bool info_vuelo(char **operacion, hash_t *hash){
+    if(!operacion[1] || operacion[2])return false;
     vuelo_t *vuelo = (vuelo_t*)hash_obtener(hash,operacion[1]);
     if(!vuelo)return false;
 
@@ -215,6 +238,7 @@ bool info_vuelo(char **operacion, hash_t *hash){
 }
 
 bool prioridad_vuelos(char **operacion, abb_t *abb){
+    if(!operacion[1] || operacion[2])return false;
     heap_t *heap = heap_crear(comparar_heap);//PARA VER PRIORIDADES
     if(!heap)return false;
 
@@ -269,12 +293,8 @@ bool prioridad_vuelos(char **operacion, abb_t *abb){
     return true;
 }
 
-bool apilar(const char *clave, void *vuelo, void *pila){
-    if(!pila_apilar((pila_t*)pila,vuelo))return false;
-    return true;
-}
-
 bool borrar(char **operacion, hash_t *hash, abb_t *abb){
+     if(!operacion[1] || !operacion[2] || operacion[3])return false;
     if(strcmp(operacion[1],operacion[2]) > 0 )return false;
     
     pila_t *pila = pila_crear();
@@ -298,37 +318,33 @@ bool borrar(char **operacion, hash_t *hash, abb_t *abb){
     return true;
 }
 
+/******************************************************
+ *     FUNCIONES AUXILIARES DEL PROGRAMA PRINCIPAL    *
+ ******************************************************/
 
-void error(char **operacion){
-	fprintf(stdout,"Error en comando %s\n",operacion[0]);
-	free_strv(operacion);
-	//pila_vaciar(pila);
-	//pila_destruir(pila);
-}
-
-/*OPERAR REALIZA CADA OPERACION EN PARTICULAR Y APILA EL RESULTADO A LA PILA
- O DEVUELVE FALSE SI HUBO UN ERROR EN LA MISMA*/
+/*OPERAR LLAMA AL COMANDO INGRESADO Y REALIZA LA OPERACION, EN CASO DE HABER
+ALGUN ERROR, DEVUELVE FALSE*/
 bool operar(op_t op, char **operacion, hash_t *hash, abb_t *abb){
 	
 	switch(op){
 		case op_agregar :
-            printf("entro a agregar\n");
-            if(!agregar_archivo(operacion[1],hash,abb))return false;
+            //printf("entro a agregar\n");
+            if(!agregar_archivo(operacion,hash,abb))return false;
 			break;
 		case op_tablero :
-            printf("entro a ver tablero\n");
+            //printf("entro a ver tablero\n");
             if(!ver_tablero(operacion,abb))return false;
 			break;
 		case op_info :
-            printf("entro a info vuelo\n");
+            //printf("entro a info vuelo\n");
             if(!info_vuelo(operacion,hash))return false;
 			break;
 		case op_prioridad :
-            printf("entro a prioridades\n");
+            //printf("entro a prioridades\n");
             if(!prioridad_vuelos(operacion,abb))return false;
 			break;
 		case op_borrar :
-            printf("entro a borrar\n");
+            //printf("entro a borrar\n");
             if(!borrar(operacion,hash,abb))return false;
 			break;
 	}
@@ -337,9 +353,9 @@ bool operar(op_t op, char **operacion, hash_t *hash, abb_t *abb){
 }
 
 
-/*IDENTIFICAR OPERACION REALIZA TODAS LAS CUENTAS NECESARIAS POR LÍNEA PARA DEVOLVER UN ÚLTIMO RESULTADO
-DEFINITIVO. LA MISMA LLAMA A CALCULAR PARA CADA VEZ QUE LEE UN OPERANDO. EL MAIN LLAMA A CALCULAR
-UNA VEZ PARA CADA LINEA*/
+/*IDENTIFICAR OPERACION REALIZA TODAS LAS COMPARCIONES NECESARIAS POR LÍNEA PARA LLAMAR A OPERAR PARA CADA VEZ QUE LEE UN COMANDO.
+EL MAIN LLAMA A IDENTIFICAR UNA VEZ PARA CADA LINEA*/
+
 void identificar_operacion(char *linea, hash_t *hash, abb_t *abb){
 
     //char *l = strndup(linea,strlen(linea)-1);
@@ -372,22 +388,20 @@ void identificar_operacion(char *linea, hash_t *hash, abb_t *abb){
     free_strv(operacion);
 }
 
-
+/*********************************************
+ *             PROGRAMA PRINCIPAL            *
+ *********************************************/
 
 
 int main(int argc, char *argv[]){
 
     hash_t *hash = hash_crear(NULL);//PARA INFO VUELOS
-    if(!hash){
-        fprintf(stderr,"ERROR de memoria\n");
-        //return -1;
-    }
+    if(!hash)return -1;
 
     abb_t *abb = abb_crear(comparar_abb,borrar_vuelo);//PARA VER TABLERO
     if(!abb){
         hash_destruir(hash);
-        fprintf(stderr,"ERROR de memoria\n");
-       // return-1;
+        return-1;
     }
 
     char* linea = NULL;
