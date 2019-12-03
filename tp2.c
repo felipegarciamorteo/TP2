@@ -7,6 +7,7 @@
 #include "abb.h"
 #include "pila.h"
 #include "strutil.h"
+#include "lista.h"
 
 const char *acciones[] = {"agregar_archivo","ver_tablero","info_vuelo","prioridad_vuelos","borrar"};
 typedef enum {op_agregar,op_tablero,op_info,op_prioridad,op_borrar}op_t;
@@ -103,7 +104,7 @@ int _comparar_heap(vuelo_t* a, vuelo_t *b){
         return strcmp(a->num,b->num) ;
     }*/
     if(strcmp(a->prioridad,b->prioridad) == 0){//compara la prioridad, y ordena de menor a mayor
-        return strcmp(a->num,b->num) ;
+        return strcmp(b->num,a->num) ;
     }
     return (strcmp(a->prioridad,b->prioridad));
 /*
@@ -130,10 +131,10 @@ int comparar_heap(/*(vuelo_t*)*/const void *a, /*(vuelo_t*)*/const void *b){
 *********************************************************/
 
 bool visitar(const char *clave, void *vuelo, void *extra){
-    if(((tablero_t*)extra)->contador >= ((tablero_t*)extra)->k)return false;
    
     if(((tablero_t*)extra)->asc){
-       fprintf(stdout,"%s - %s\n",((vuelo_t*)vuelo)->fecha,((vuelo_t*)vuelo)->num);
+        if(((tablero_t*)extra)->contador >= ((tablero_t*)extra)->k)return false;
+        fprintf(stdout,"%s - %s\n",((vuelo_t*)vuelo)->fecha,((vuelo_t*)vuelo)->num);
     }else{
         pila_apilar(((tablero_t*)extra)->pila,vuelo);
     }
@@ -141,8 +142,8 @@ bool visitar(const char *clave, void *vuelo, void *extra){
     return true;
 }
 
-bool apilar(const char *clave, void *vuelo, void *pila){
-    if(!pila_apilar((pila_t*)pila,vuelo))return false;
+bool enlistar(const char *clave, void *vuelo, void *lista){
+    if(!lista_insertar_ultimo((lista_t*)lista,vuelo))return false;
     return true;
 }
 
@@ -218,9 +219,11 @@ bool ver_tablero(char **operacion, abb_t *abb){
             return false;
         }
         abb_in_order_finito(abb,visitar,operacion[3],operacion[4],t);
-        while(!pila_esta_vacia(t->pila)){
+        size_t cont = 0;
+        while(!pila_esta_vacia(t->pila) && cont < k){
             vuelo_t *v = (vuelo_t*)pila_desapilar(t->pila);
             fprintf(stdout,"%s - %s\n",v->fecha,v->num);
+            cont++;
         }
         pila_destruir(t->pila);
     }
@@ -239,7 +242,12 @@ bool info_vuelo(char **operacion, hash_t *hash){
 
 bool prioridad_vuelos(char **operacion, abb_t *abb){
     if(!operacion[1] || operacion[2])return false;
-    heap_t *heap = heap_crear(comparar_heap);//PARA VER PRIORIDADES
+    char *end;
+    long k = strtol(operacion[1],&end,10);
+    if(operacion[1] == end)return false;
+    if(k > abb_cantidad(abb)) k = abb_cantidad(abb);  
+
+    heap_t *heap = heap_crear(comparar_heap);
     if(!heap)return false;
 
     abb_iter_t *iter = abb_iter_in_crear(abb);
@@ -253,10 +261,8 @@ bool prioridad_vuelos(char **operacion, abb_t *abb){
         heap_destruir(heap,NULL);
         abb_iter_in_destruir(iter);
         return false;
-    }
+    }  
 
-    long k = strtol(operacion[1],NULL,10);
-    
     for(size_t i = 0; i<k; i++){
         heap_encolar(heap,abb_iter_in_ver_dato_actual(iter));
         abb_iter_in_avanzar(iter);
@@ -297,13 +303,14 @@ bool borrar(char **operacion, hash_t *hash, abb_t *abb){
      if(!operacion[1] || !operacion[2] || operacion[3])return false;
     if(strcmp(operacion[1],operacion[2]) > 0 )return false;
     
-    pila_t *pila = pila_crear();
-    if(!pila)return false;
+    lista_t *lista = lista_crear();
+    if(!lista)return false;
 
-    abb_in_order_finito(abb,apilar,operacion[1],operacion[2],pila);
+    abb_in_order_finito(abb,enlistar,operacion[1],operacion[2],lista);
     
-    while(!pila_esta_vacia(pila)){
-        vuelo_t *v = (vuelo_t*)pila_desapilar(pila);
+    while(!lista_esta_vacia(lista)){
+        vuelo_t *v = (vuelo_t*)lista_borrar_primero(lista);
+        fprintf(stdout,"%s %s %s %s %s %s %s %s %s %s", v->num, v->aerolinea, v->origen, v->dest, v->cola, v->prioridad, v->fecha, v->demora,v->tiempo,v->cancelados);
         char *claves[3];
         claves[0] = v->fecha;
         claves[1] = v->num;
@@ -314,7 +321,7 @@ bool borrar(char **operacion, hash_t *hash, abb_t *abb){
         borrar_vuelo(v);
         free(clave_abb);
     }
-    pila_destruir(pila);
+    lista_destruir(lista,NULL);
     return true;
 }
 
