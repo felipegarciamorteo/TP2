@@ -1,0 +1,24 @@
+agregar_archivo vuelos-algueiza-parte-01.csv
+prioridad_vuelos 5
+prioridad_vuelos
+prioridad_vuelos 5 5 
+prioridad_vuelos ab
+prioridad_vuelos 2a
+prioridad_vuelos f f
+prioridad_vuelos 3 3 3 3 
+prioridad_vuelos f f f f 
+prioridad_vuelos fff ffffff
+prioridad_vuelos f f f f f f  f f f f f f f fff
+prioridad_vuelos   
+prioridad_vuelos 
+prioridad_vuelos 5 5 
+prioridad_vuelos 100 prioridad_vuelos 0
+prioridad_vuelos abh
+prioridad_vuelos abh 50
+prioridad_vuelos a-6
+prioridad_vuelos NULL 67
+prioridad_vuelos 67 NULL
+prioridad_vuelos NULL
+prioridad_vuelos 10000agh
+prioridad_vuelos -10
+prioridad_vuelos 0

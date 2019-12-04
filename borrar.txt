@@ -1,0 +1,17 @@
+agregar_archivo vuelos-algueiza-parte-01.csv
+#borrar 2018-09-05T16:33:02-1092 2018-11-03T18:40:31-1863
+#borro_la_raiz
+borrar 2018-04-10T23:22:55-4608 2018-04-10T23:22:55-4608
+#borro_raiz_nueva
+borrar 2018-04-21T07:41:48-5460 2018-04-21T07:41:48-5460
+#borro_mas_grande
+borrar 2018-11-11T07:51:19-675 2018-11-11T07:51:19-675
+#borro_mas_chico
+borrar 2018-01-02T23:04:56-2027 2018-01-02T23:04:56-2027
+#borrar_con_letras
+borrar a z
+borrar a 2000
+#borro_todo
+borrar 0 3000
+#AGREGO_DEVULTA
+agregar_archivo vuelos-algueiza-parte-01.csv

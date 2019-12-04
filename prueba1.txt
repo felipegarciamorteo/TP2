@@ -1,0 +1,7 @@
+agregar_archivo vuelos-algueiza-parte-01.csv
+ver_tablero 100 asc 2 3
+prioridad_vuelos 1
+agregar_archivo vuelos-algueiza-parte-01b.csv
+ver_tablero 100 asc 2 3
+#borrar 2018-09-05T16:33:02-1092 2018-11-03T18:40:31-1863
+#borrar 4608,OO,PDX,SEA,N812SK,08,2018-04-10T23:22:55,05,43,0

@@ -1,0 +1,17 @@
+ver_tablero
+borrar
+info_vuelo
+prioridad_vuelos
+agregar_archivo
+agregar_archivo vuelos-algueiza-parte-01.csv
+ver_tablero 4 asc 2018-01-11T07:51:19-8999 2019-11-11T07:51:19-9899
+prioridad_vuelos 5
+borrar 2018-08-11T07:51:19-899 2018-11-11T07:51:19-9899
+ver_tablero 3 asc 2018-05 2018-12
+info_vuelo 4608
+prioridad_vuelos 5
+ver_tablero 5 desc 2017 2019 3
+borrar 2000 3000 5
+info_vuelo 4608 5
+prioridad_vuelos 5 5
+agregar_archivo vuelos-algueiza-parte-01.csv t.csv
